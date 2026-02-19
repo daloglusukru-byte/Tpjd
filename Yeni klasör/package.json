@@ -1,0 +1,45 @@
+{
+  "name": "tpjd-uyelik-sistemi",
+  "version": "1.0.0",
+  "description": "TPJD Üyelik Yönetim Sistemi",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "dist": "npm run build"
+  },
+  "keywords": [
+    "tpjd",
+    "üyelik",
+    "yönetim"
+  ],
+  "author": "TPJD",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.tpjd.uyeliksistemi",
+    "productName": "TPJD Üyelik Sistemi",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!node_modules",
+      "!dist"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
