@@ -1,0 +1,370 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║     TPJD ÜYELİK YÖNETİM PANELİ — KURULUM KILAVUZU           ║
+║     Sürüm: 1.0.0 | Tarih: 19 Şubat 2026                     ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+
+Bu kılavuz, TPJD Üyelik Yönetim Panelini kendi Turhost (veya benzeri)
+sunucunuza kurmak için gereken TÜM adımları içerir.
+
+Tahmini süre: 15-20 dakika
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 1: GEREKSİNİMLER
+═══════════════════════════════════════════════════════════════
+
+  ✅ Turhost (veya benzeri) hosting hesabı — cPanel erişimi
+  ✅ MySQL veritabanı oluşturma yetkisi
+  ✅ PHP 7.4+ desteği (Turhost'ta varsayılan olarak var)
+  ✅ Bilgisayarınızda internet bağlantısı (WhatsApp için)
+
+Opsiyonel:
+  ⬜ Node.js (WhatsApp mesaj gönderimi için — Adım 5'te anlatılıyor)
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 2: VERİTABANI OLUŞTURMA (cPanel)
+═══════════════════════════════════════════════════════════════
+
+1. Turhost paneline giriş yapın:
+   → https://hpanel.hostinger.com
+
+2. Sol menüden "Veritabanları" → "MySQL Veritabanları" tıklayın
+
+3. Yeni veritabanı oluşturun:
+   → Veritabanı adı: tpjd        (tam adı: u550249498_tpjd gibi olacak)
+   → Kullanıcı adı:  tpjd_user   (tam adı: u550249498_tpjd gibi olacak)
+   → Şifre:          Güçlü bir şifre yazın (büyük+küçük harf+rakam+özel karakter)
+
+4. ❗ Bu 3 bilgiyi NOT ALIN — config.php'ye yazacaksınız:
+   → Veritabanı Adı:     ___________________________
+   → Kullanıcı Adı:      ___________________________
+   → Şifre:              ___________________________
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 3: DOSYALARI YÜKLEME (cPanel File Manager)
+═══════════════════════════════════════════════════════════════
+
+1. Turhost panelinde "Dosyalar" → "Dosya Yöneticisi" tıklayın
+
+2. public_html klasörüne girin
+
+3. "uye" adında alt klasör bulamıyorsanız yeni oluşturun:
+   → Yeni Klasör → "uye" yazın → Oluştur
+
+4. TPJD_Deploy_Paketi.zip dosyasını bilgisayarınızdan yükleyin:
+   → Dosya Yöneticisinde "uye" klasörüne girin
+   → Üst menüden "Yükle" tıklayın
+   → TPJD_Deploy_Paketi.zip dosyasını sürükleyip bırakın
+   → Yükleme tamamlanınca ZIP'e sağ tıklayın → "Çıkart" → "Çıkart"
+
+5. ZIP çıkarıldıktan sonra klasör yapınız şu şekilde olmalı:
+
+   public_html/
+   └── uye/
+       ├── index.html          ← Ana sayfa
+       ├── config.php          ← ❗ Düzenlemeniz gerekiyor (Bölüm 4)
+       ├── setup.php           ← Tablo kurulumu (bir kez çalıştır, sonra sil)
+       ├── kvkk_key.php        ← Şifreleme anahtarı
+       ├── tpjdlogo.jfif       ← TPJD logosu
+       ├── TPJD_WhatsApp_Kurulum.zip  ← WhatsApp paketi (Bölüm 5)
+       └── api/
+           ├── agents.php
+           ├── auth.php
+           ├── backup.php
+           ├── login.php
+           ├── members.php
+           ├── payments.php
+           ├── notifications.php
+           ├── reports.php
+           ├── settings.php
+           ├── send_email.php
+           ├── sms.php
+           ├── whatsapp_control.php
+           ├── session_check.php
+           ├── kvkk.php
+           ├── kvkk_migrate.php
+           ├── kvkk_reverse_migrate.php
+           ├── batch_debt.php
+           └── batch_past_debt.php
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 4: CONFIG.PHP DÜZENLEME
+═══════════════════════════════════════════════════════════════
+
+1. cPanel Dosya Yöneticisinde uye/config.php dosyasına sağ tıklayın
+   → "Düzenle" veya "Code Editor" tıklayın
+
+2. Şu 3 satırı bulun ve Bölüm 2'de not aldığınız bilgilerle değiştirin:
+
+   ÖNCE:
+   $username   = "VERITABANI_KULLANICI_ADI";
+   $password   = "VERITABANI_SIFRESI";
+   $dbname     = "VERITABANI_ADI";
+
+   SONRA (örnek):
+   $username   = "u550249498_tpjd";
+   $password   = "GucluSifre123!";
+   $dbname     = "u550249498_tpjd";
+
+3. CORS satırını da kendi sitenizle güncelleyin:
+
+   ÖNCE:
+   $allowedOrigins = ['https://SITENIZ.com', ...
+
+   SONRA:
+   $allowedOrigins = ['https://siteniz.com', 'https://www.siteniz.com', ...
+
+4. "Kaydet" tıklayın
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 5: VERİTABANI TABLOLARINI OLUŞTURMA
+═══════════════════════════════════════════════════════════════
+
+1. Tarayıcıda şu adresi açın:
+   → https://siteniz.com/uye/setup.php
+
+2. "Veritabanı bağlantısı başarılı" mesajını görmelisiniz
+
+3. Tüm tablolar başarıyla oluşturulduğunda:
+   → "Kurulum tamamlandı!" mesajı görünecek
+   → Varsayılan giriş bilgileri:
+     Kullanıcı adı: admin
+     Şifre: admin123
+
+4. ⚠️ GÜVENLİK: 
+   → cPanel'e dönün
+   → uye/setup.php dosyasını SİLİN (sağ tıkla → Sil)
+   → Bu dosya bir güvenlik açığıdır, üretimde bırakılmamalıdır!
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 6: İLK GİRİŞ VE ŞİFRE DEĞİŞTİRME
+═══════════════════════════════════════════════════════════════
+
+1. Tarayıcıda şu adresi açın:
+   → https://siteniz.com/uye/
+
+2. Giriş bilgileri:
+   → Kullanıcı adı: admin
+   → Şifre: admin123
+
+3. ❗ İlk iş olarak şifreyi değiştirin:
+   → Üst menüden "Ayarlar" sekmesine tıklayın
+   → "Kullanıcı Adı ve Şifre Değiştir" bölümünde:
+     → Mevcut şifre: admin123
+     → Yeni şifre: güçlü bir şifre yazın
+   → "Değişiklikleri Kaydet" tıklayın
+
+4. Aidat tutarlarını ayarlayın:
+   → Aynı sayfada "Aidat Tutarları" bölümünde
+   → Her üyelik tipi için yıllık tutarı girin
+   → "Aidat Tutarlarını Kaydet" tıklayın
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 7: WHATSAPP KURULUMU (OPSİYONEL)
+═══════════════════════════════════════════════════════════════
+
+WhatsApp mesaj gönderimi için bilgisayarınıza küçük bir program
+kurmanız gerekiyor. Bu program arka planda çalışır ve panel
+üzerinden WhatsApp mesajı göndermenizi sağlar.
+
+ADIM 1 — Node.js Kur
+─────────────────────
+1. Tarayıcınızı açın (Chrome, Edge vs.)
+2. Adres çubuğuna yazın: https://nodejs.org/en/download/
+3. Sayfa açılınca aşağıya doğru kaydırın
+
+4. Şu bölümü bulun:
+
+   ┌──────────────────────────────────────────────────────────────┐
+   │                                                              │
+   │  Or get a prebuilt Node.js for  🪟 Windows  running a x64   │
+   │                                                              │
+   │  ╔══════════════════════╗    ╔════════════════════════════╗  │
+   │  ║  ⬇ Windows           ║    ║  ⬇ Standalone Binary      ║  │
+   │  ║    Installer (.msi)  ║    ║    (.zip)                  ║  │
+   │  ╚══════════════════════╝    ╚════════════════════════════╝  │
+   │        ↑↑↑↑↑↑↑↑↑↑↑↑                                        │
+   │   BU BUTONA TIKLAYIN!                                       │
+   │                                                              │
+   └──────────────────────────────────────────────────────────────┘
+
+   ❗ "Windows Installer (.msi)" yazan yeşil butona tıklayın!
+   ❗ ZIP olanını DEĞİL, MSI olanını seçin!
+
+   📎 Ekran görüntüsü: nodejs_indirme_rehber.png dosyasına bakın
+
+5. İndirilen dosyayı çalıştırın:
+   → node-v24.xx.x-x64.msi gibi bir dosya inecek
+   → Çift tıklayın
+   → Next → Next → Next → Install → Finish
+
+6. Kurulumu doğrulayın:
+   → Başlat menüsü → "cmd" yazın → Komut İstemi açın
+   → Şunu yazıp Enter'a basın:
+     node --version
+   → v24.xx.x gibi bir çıktı görmelisiniz ✅
+
+ADIM 2 — WhatsApp Paketini İndir
+─────────────────────────────────
+Yöntem A (Panelden):
+  → Panel → Ayarlar → WhatsApp Kurulumu → "WhatsApp Paketi İndir"
+
+Yöntem B (Direkt):
+  → https://siteniz.com/uye/TPJD_WhatsApp_Kurulum.zip indir
+
+ZIP'i masaüstüne çıkartın. Şu dosyaları göreceksiniz:
+  TPJD_WHATSAPP.bat      ← Başlatma dosyası
+  whatsapp-server/
+    server.js             ← Sunucu kodu
+    package.json          ← Bağımlılıklar
+
+ADIM 3 — Programı Başlat
+─────────────────────────
+1. TPJD_WHATSAPP.bat dosyasını çift tıklayın
+2. İlk çalıştırmada bağımlılıklar inecektir (1-2 dakika bekleyin)
+3. Siyah pencerede şu mesajları göreceksiniz:
+
+   ╔═══════════════════════════════════════════════╗
+   ║     TPJD - WhatsApp Lokal Sunucu             ║
+   ║     http://localhost:3456                     ║
+   ╚═══════════════════════════════════════════════╝
+
+ADIM 4 — QR Kod Okut
+─────────────────────
+1. Siyah pencerede QR kodu görünecek
+2. Telefonunuzda:
+   → WhatsApp'ı açın
+   → Sağ üst menü (⋮) → "Bağlı Cihazlar" → "Cihaz Bağla"
+   → QR kodu okutun
+3. "WHATSAPP BAGLANDI!" mesajını gördüğünüzde hazırsınız
+
+ADIM 5 — Hazır!
+────────────────
+Artık panelden WhatsApp mesajı gönderebilirsiniz:
+  → Bildirimler sekmesi → Toplu WhatsApp
+  → Etkinlikler sekmesi → Duyuru gönder (WhatsApp kanalı)
+
+ÖNEMLİ NOTLAR:
+  • Siyah pencereyi KAPATMAYIN — kapatırsanız WhatsApp bağlantısı kesilir
+  • İlk QR okutmadan sonra oturum hatırlanır
+  • Bilgisayarı yeniden başlattığınızda TPJD_WHATSAPP.bat'ı tekrar çalıştırın
+  • Sorun yaşarsanız: whatsapp-server klasöründeki .wwebjs_auth
+    klasörünü silin ve tekrar başlatın
+
+BAĞLANTI KONTROLÜ:
+  → Panel → Ayarlar → WhatsApp Kurulumu → "Kontrol Et" butonu
+  → 🟢 Yeşil = bağlı  |  🟡 Sarı = QR bekliyor  |  🔴 Kırmızı = kapalı
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 8: AGENT MAİL AYARLARI
+═══════════════════════════════════════════════════════════════
+
+Agent'ların email gönderebilmesi için:
+
+1. Ayarlar → Agent Mail Ayarları bölümüne gidin
+
+2. "Aylık Rapor Alıcıları" kısmına email adreslerini girin:
+   → Dernek başkanı
+   → Sayman
+   → Genel sekreter
+   (Virgülle ayırarak birden fazla adres girebilirsiniz)
+
+3. "Agent Mail Ayarlarını Kaydet" tıklayın
+
+Not: Email gönderimi sunucunuz üzerinden yapılır. 
+Turhost'ta PHP mail() varsayılan olarak çalışır.
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 9: GÜNLÜK KULLANIM
+═══════════════════════════════════════════════════════════════
+
+PANELİ AÇIN:
+  → https://siteniz.com/uye/
+
+ÜYE EKLE:
+  → Üyeler sekmesi → "Yeni Üye Ekle" butonu → Formu doldurun
+
+AİDAT KAYDET:
+  → Aidatlar sekmesi → "Yeni Ödeme" → Üye seç, tutar gir, kaydet
+
+GEÇMİŞ BORÇ YAZ:
+  → Üye detayına gir → "Geçmiş Dönem Borçlandır" → Yıl aralığı seç
+
+TOPLU BİLDİRİM:
+  → Bildirimler sekmesi → Mesaj yaz → "Toplu Email" veya "Toplu WhatsApp"
+
+AGENT DAŞ BOARD:
+  → Agents sekmesi → Agent durumları, son çalışma logları
+
+DARK/LIGHT MODE:
+  → Sağ üst köşedeki ☀️/🌙 butonuyla tema değiştirin
+
+TAKVİM:
+  → Dashboard'daki takvimden güne tıklayın
+  → Not veya etkinlik ekleyin
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 10: SORUN GİDERME
+═══════════════════════════════════════════════════════════════
+
+SORUN: "Veritabanı bağlantısı başarısız" hatası
+ÇÖZÜM: config.php'deki kullanıcı adı, şifre ve DB adını kontrol edin.
+       cPanel'de veritabanı kullanıcısının yetkili olduğundan emin olun.
+
+SORUN: Sayfa açılıyor ama "401" veya "Unauthorized" hatası
+ÇÖZÜM: Tarayıcı çerezlerini temizleyin ve tekrar giriş yapın.
+
+SORUN: Email gönderilmiyor
+ÇÖZÜM: Turhost'ta PHP mail() devre dışı olabilir.
+       Hosting destek ile iletişime geçin.
+
+SORUN: WhatsApp "sunucu kapalı" hatası
+ÇÖZÜM: Bilgisayarınızda TPJD_WHATSAPP.bat çalışıyor mu kontrol edin.
+       Siyah pencere açık olmalıdır.
+
+SORUN: WhatsApp QR kodu görünmüyor
+ÇÖZÜM: whatsapp-server/.wwebjs_auth klasörünü silin, BAT'ı tekrar başlatın.
+
+SORUN: Şifremi unuttum
+ÇÖZÜM: cPanel → phpMyAdmin → settings tablosu → admin_password satırını
+       "admin123" ile değiştirin: "admin123"
+
+
+═══════════════════════════════════════════════════════════════
+BÖLÜM 11: YEDEKLEME
+═══════════════════════════════════════════════════════════════
+
+Düzenli yedek almayı unutmayın!
+
+VERİTABANI YEDEĞİ:
+  → cPanel → phpMyAdmin → Veritabanınızı seçin
+  → "Dışa Aktar" → "Git" → SQL dosyası indirilir
+
+DOSYA YEDEĞİ:
+  → cPanel → Dosya Yöneticisi → uye klasörüne sağ tıkla → Sıkıştır
+  → ZIP dosyasını indirin
+
+
+═══════════════════════════════════════════════════════════════
+DESTEK
+═══════════════════════════════════════════════════════════════
+
+Teknik sorunlar için: [buraya iletişim bilgilerinizi yazın]
+
+
+╔═══════════════════════════════════════════════════════════════╗
+║  TPJD Üyelik Yönetim Paneli v1.0.0                          ║
+║  © 2026 — Tüm hakları saklıdır.                             ║
+╚═══════════════════════════════════════════════════════════════╝

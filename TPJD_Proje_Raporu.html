@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPJD Üyelik Yönetim Paneli — Proje Özet Raporu</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #1a252f 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(243, 156, 18, 0.1) 0%, transparent 60%);
+        }
+
+        .header-banner h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .header-banner .subtitle {
+            font-size: 15px;
+            opacity: 0.85;
+            position: relative;
+        }
+
+        .header-banner .badge {
+            display: inline-block;
+            background: #f39c12;
+            color: #2c3e50;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 12px;
+            position: relative;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .meta-bar {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .meta-bar strong {
+            color: #2c3e50;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        /* Önce-Sonra Tablosu */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .compare-table thead {
+            background: #f8f9fa;
+        }
+
+        .compare-table th {
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .compare-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+
+        .compare-table tr:hover {
+            background: rgba(243, 156, 18, 0.04);
+        }
+
+        .before {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        .after {
+            color: #27ae60;
+            font-weight: 500;
+        }
+
+        /* Detay Tabloları */
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .detail-table th {
+            padding: 8px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #eee;
+            background: #fafbfc;
+        }
+
+        .detail-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f5f5f5;
+            vertical-align: top;
+        }
+
+        .detail-table tr:hover {
+            background: #fafbfc;
+        }
+
+        .status-ok {
+            display: inline-block;
+            background: rgba(39, 174, 96, 0.12);
+            color: #27ae60;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-wait {
+            display: inline-block;
+            background: rgba(243, 156, 18, 0.12);
+            color: #e67e22;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-no {
+            display: inline-block;
+            background: rgba(231, 76, 60, 0.12);
+            color: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f8f9fa, #fff);
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 28px;
+            font-weight: 800;
+            color: #2c3e50;
+        }
+
+        .stat-box .label {
+            font-size: 11px;
+            color: #7f8c8d;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .stat-box.gold {
+            border-left: 4px solid #f39c12;
+        }
+
+        .stat-box.blue {
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-box.green {
+            border-left: 4px solid #27ae60;
+        }
+
+        .stat-box.red {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .file-tree {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #1a1d23;
+            color: #abb2bf;
+            padding: 16px;
+            border-radius: 8px;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        .file-tree .folder {
+            color: #61afef;
+            font-weight: 600;
+        }
+
+        .file-tree .file {
+            color: #98c379;
+        }
+
+        .file-tree .size {
+            color: #7f8c8d;
+        }
+
+        .file-tree .desc {
+            color: #e5c07b;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #95a5a6;
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+
+            .header-banner {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-banner">
+        <h1>🏛️ TPJD Üyelik Yönetim Paneli</h1>
+        <div class="subtitle">Türkiye Petrol Jeologları Derneği — Akıllı Üyelik Yönetim Sistemi</div>
+        <div class="badge">PROJE ÖZET RAPORU</div>
+    </div>
+
+    <div class="container">
+
+        <div class="meta-bar">
+            <div><strong>Proje Süresi:</strong> 17 – 19 Şubat 2026 (3 gün)</div>
+            <div><strong>Canlı Adres:</strong> ahmetemekli.com/uye/</div>
+            <div><strong>Rapor Tarihi:</strong> 19 Şubat 2026</div>
+        </div>
+
+        <!-- Sayılar -->
+        <div class="stats-grid">
+            <div class="stat-box gold">
+                <div class="number">9</div>
+                <div class="label">Otonom Agent</div>
+            </div>
+            <div class="stat-box blue">
+                <div class="number">3</div>
+                <div class="label">İletişim Kanalı</div>
+            </div>
+            <div class="stat-box green">
+                <div class="number">25+</div>
+                <div class="label">Dosya</div>
+            </div>
+            <div class="stat-box red">
+                <div class="number">8500+</div>
+                <div class="label">Satır Kod</div>
+            </div>
+        </div>
+
+        <!-- ÖNCE SONRA -->
+        <div class="section">
+            <div class="section-header">📊 Öncesi → Sonrası Karşılaştırma</div>
+            <div class="section-body">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>Kategori</th>
+                            <th>Önce (17 Şubat)</th>
+                            <th>Sonra (19 Şubat)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Üye Yönetimi</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ Tam CRUD sistemi (ekle/düzenle/sil/detay)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Aidat Takibi</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ Ödeme kayıt, borç takip, 3 kademeli hatırlatma</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bildirim Sistemi</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ Email + WhatsApp + SMS altyapısı</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Agent Sistemi</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ 9 akıllı otonom agent</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Güvenlik</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ Session auth, SQL injection koruması, rate limiting</td>
+                        </tr>
+                        <tr>
+                            <td><strong>KVKK Uyumu</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ Erişim logları, consent yönetimi, anonimleştirme</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dashboard</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ İstatistikler, takvim, grafikler, canlı saat</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dark/Light Mode</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ Tam tema desteği, tek tıkla geçiş</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Logo</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ TPJD logosu entegre</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Canlı Deploy</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ Turhost sunucusunda çalışıyor</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GitHub Yedek</strong></td>
+                            <td class="before">❌ Yok</td>
+                            <td class="after">✅ GitHub'a push edildi</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TEMEL ALTYAPI -->
+        <div class="section">
+            <div class="section-header">🏗️ Temel Altyapı</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Çalışma</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>PHP Backend</strong></td>
+                            <td>config.php, setup.php, login.php, auth.php — MySQL bağlantısı, session yönetimi, tablo
+                                oluşturma</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Üye Yönetimi API</strong></td>
+                            <td>members.php — Üye ekleme, düzenleme, silme, listeleme, detay görüntüleme</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Ödeme Yönetimi API</strong></td>
+                            <td>payments.php — Aidat ödeme kaydı, borç takibi, ödeme geçmişi</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Bildirim Sistemi API</strong></td>
+                            <td>notifications.php — Bildirim gönderim, kayıt ve listeleme</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>Raporlama API</strong></td>
+                            <td>reports.php — İstatistik ve rapor endpoint'leri</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>Ayarlar API</strong></td>
+                            <td>settings.php — Sistem ayarları yönetimi</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><strong>Session Güvenliği</strong></td>
+                            <td>session_check.php, auth.php — Her API isteğinde oturum doğrulama</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AGENT SİSTEMİ -->
+        <div class="section">
+            <div class="section-header">🤖 Akıllı Agent Sistemi (9 Agent)</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Agent</th>
+                            <th>Açıklama</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Ödeme Onay Agent'ı</strong></td>
+                            <td>Ödeme yapıldığında üyeye otomatik onay bildirimi gönderir</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Hoş Geldin Agent'ı</strong></td>
+                            <td>Yeni üye kaydında hoş geldin mesajı gönderir</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Borç Hatırlatma Agent'ı</strong></td>
+                            <td>3 kademeli artan şiddette borç hatırlatma sistemi</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Yıllık Borçlandırma Agent'ı</strong></td>
+                            <td>Yıl başında tüm asil üyelere aidat borcu yazar</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>Muhasebe Agent'ı</strong></td>
+                            <td>Toplam gelir, borç, üye sayıları dashboard'da gösterir</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>Doğum Günü Agent'ı</strong></td>
+                            <td>Her gün doğum günü olan üyelere kutlama mesajı (otomatik)</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><strong>Aylık Yönetim Raporu</strong></td>
+                            <td>Ayın 1'inde yöneticiye detaylı HTML email rapor</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td><strong>Etkinlik Duyuru Agent'ı</strong></td>
+                            <td>Etkinlik duyurusunu Email / WhatsApp / Her İkisi ile gönderir</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td><strong>KVKK Uyum Agent'ı</strong></td>
+                            <td>Erişim logları, consent yönetimi, veri anonimleştirme</td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="margin-top:12px;font-size:12px;color:#7f8c8d;">
+                    <strong>Auto-Run:</strong> Sayfa açılışında otomatik çalışır. Duplicate guard ile günde 1 kez
+                    çalışır.
+                </p>
+            </div>
+        </div>
+
+        <!-- İLETİŞİM KANALLARI -->
+        <div class="section">
+            <div class="section-header">📱 İletişim Kanalları</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Kanal</th>
+                            <th>Durum</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Email</strong></td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                            <td>PHP mail() fonksiyonu ile sunucu üzerinden gönderim</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>WhatsApp</strong></td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                            <td>Lokal sunucu üzerinden WhatsApp Web entegrasyonu, QR kod bağlantısı</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>SMS (NetGSM)</strong></td>
+                            <td><span class="status-wait">⏳ Hazır</span></td>
+                            <td>API altyapısı kodda mevcut, API key yapılandırması bekleniyor</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Toplu Gönderim</strong></td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                            <td>Bildirimler sekmesinden toplu Email/WhatsApp gönderimi</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- GÜVENLİK -->
+        <div class="section">
+            <div class="section-header">🔒 Güvenlik Sertleştirmesi</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Önlem</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Session Authentication</strong></td>
+                            <td>Her API isteğinde auth.php guard kontrolü</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Login Güvenliği</strong></td>
+                            <td>Brute force koruması (rate limiting)</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>SQL Injection Koruması</strong></td>
+                            <td>6 PHP dosyasında prepared statement'lar</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>CORS Kısıtlama</strong></td>
+                            <td>Origin whitelist ile yetkisiz erişim engeli</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>401 Hata Düzeltmesi</strong></td>
+                            <td>Login olmadan API çağrısı yapılması engellendi</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>Hassas Dosya Temizliği</strong></td>
+                            <td>setup.php devre dışı, yedek dosyalar silindi</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- KVKK -->
+        <div class="section">
+            <div class="section-header">📋 KVKK Uyumu</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Özellik</th>
+                            <th>Durum</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Erişim Logları</strong></td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                            <td>Tüm üye erişimleri access_logs tablosunda kaydedilir</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Consent (Onay) Yönetimi</strong></td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                            <td>member_consents tablosunda onay kayıtları tutulur</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Veri Anonimleştirme</strong></td>
+                            <td><span class="status-ok">✅ Aktif</span></td>
+                            <td>KVKK kapsamında üye verisi silinebilir</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>AES-256 Şifreleme</strong></td>
+                            <td><span class="status-no">❌ Kaldırıldı</span></td>
+                            <td>Veri bozulmasına neden olduğu tespit edildi, güvenli şekilde geri alındı</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="section">
+            <div class="section-header">🖥️ Dashboard & Arayüz Özellikleri</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Özellik</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>İstatistik Kartları</strong></td>
+                            <td>Toplam üye, aktif üye, bekleyen ödeme, toplam gelir</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>İnteraktif Takvim</strong></td>
+                            <td>Ay bazlı takvim, ödemeler/doğum günleri/bildirimler nokta ile işaretli</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>📝 Not Ekle</strong></td>
+                            <td>Takvimde herhangi bir güne tıklayarak kişisel not ekleme</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>📅 Etkinlik Ekle</strong></td>
+                            <td>Takvimde güne etkinlik ekleme (ad, saat, yer, açıklama)</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>Üyelik Tipi Dağılımı</strong></td>
+                            <td>Donut grafik — Asil, Onursal, Öğrenci, Fahri dağılımı</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>Borçlu Üyeler Tablosu</strong></td>
+                            <td>Borcu olan üyelerin listesi ve detay görüntüleme</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><strong>Canlı Saat</strong></td>
+                            <td>Dashboard'da dinamik tarih + saat gösterimi</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td><strong>Dark / Light Mode</strong></td>
+                            <td>Tek tıkla tema değişimi, tercih hatırlama</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td><strong>TPJD Logo</strong></td>
+                            <td>Header'da yuvarlak TPJD logosu</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- WHATSAPP -->
+        <div class="section">
+            <div class="section-header">📲 WhatsApp Entegrasyonu</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Çalışma</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Evolution API Araştırması</strong></td>
+                            <td>Docker ile self-hosted WhatsApp API kurulumu araştırıldı</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Lokal Sunucu Entegrasyonu</strong></td>
+                            <td>localhost:3456 üzerinde WhatsApp Web bağlantısı</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>QR Kod Bağlantısı</strong></td>
+                            <td>Agents sekmesinden WhatsApp QR kod okutma</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Toplu WhatsApp Gönderimi</strong></td>
+                            <td>Bildirimler sekmesinden tüm üyelere toplu mesaj</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>Durum Kontrolü</strong></td>
+                            <td>Sunucu bağlantı durumu kontrolü ve hata yönetimi</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CRON JOB -->
+        <div class="section">
+            <div class="section-header">⏰ Otomasyon & Cron Job</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Özellik</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Günlük Doğum Günü</strong></td>
+                            <td>Otomatik doğum günü kutlama mesajı gönderimi</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Günlük Borç Hatırlatma</strong></td>
+                            <td>3 kademeli hatırlatma sistemi (yumuşak → sert)</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Aylık Yönetim Raporu</strong></td>
+                            <td>Ayın 1'inde otomatik detaylı email rapor</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Auto-Run Guard</strong></td>
+                            <td>Aynı gün içinde tekrar çalışmayı engelleyen duplicate guard</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- DEPLOY -->
+        <div class="section">
+            <div class="section-header">🚀 Deploy & Versiyon Kontrolü</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Çalışma</th>
+                            <th>Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Turhost Deploy</strong></td>
+                            <td>cPanel File Manager ile sunucuya yükleme</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>MySQL Veritabanı</strong></td>
+                            <td>setup.php ile otomatik tablo oluşturma</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Git Başlatma</strong></td>
+                            <td>Proje dizininde git init + .gitignore</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>GitHub Push</strong></td>
+                            <td>daloglusukru-byte/Tpjd reposuna yedekleme</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- DOSYA YAPISI -->
+        <div class="section">
+            <div class="section-header">📁 Dosya Yapısı</div>
+            <div class="section-body">
+                <div class="file-tree">
+                    <span class="folder">tpjd/uye/uye/</span>
+                    ├── <span class="file">index.html</span> <span class="size">(448 KB)</span> <span class="desc">— Tek
+                        sayfa uygulama, tüm arayüz + JS</span>
+                    ├── <span class="file">config.php</span> <span class="size">(2 KB)</span> <span class="desc">— DB
+                        bağlantı ayarları</span>
+                    ├── <span class="file">setup.php</span> <span class="size">(7 KB)</span> <span class="desc">— Tablo
+                        oluşturma scripti</span>
+                    ├── <span class="file">kvkk_key.php</span> <span class="size">(0.4 KB)</span> <span class="desc">—
+                        Şifreleme anahtarı</span>
+                    ├── <span class="file">tpjdlogo.jfif</span> <span class="size"></span> <span class="desc">— TPJD
+                        logosu</span>
+                    └── <span class="folder">api/</span>
+                    ├── <span class="file">agents.php</span> <span class="size">(64 KB)</span> <span class="desc">— 9
+                        agent sistemi</span>
+                    ├── <span class="file">auth.php</span> <span class="size">(0.7 KB)</span> <span class="desc">—
+                        Session guard</span>
+                    ├── <span class="file">login.php</span> <span class="size">(8 KB)</span> <span class="desc">— Giriş
+                        + rate limiting</span>
+                    ├── <span class="file">members.php</span> <span class="size">(21 KB)</span> <span class="desc">— Üye
+                        CRUD</span>
+                    ├── <span class="file">payments.php</span> <span class="size">(10 KB)</span> <span class="desc">—
+                        Ödeme yönetimi</span>
+                    ├── <span class="file">notifications.php</span> <span class="size">(13 KB)</span> <span
+                        class="desc">— Bildirim sistemi</span>
+                    ├── <span class="file">reports.php</span> <span class="size">(5 KB)</span> <span class="desc">—
+                        Raporlama</span>
+                    ├── <span class="file">settings.php</span> <span class="size">(4 KB)</span> <span class="desc">—
+                        Sistem ayarları</span>
+                    ├── <span class="file">send_email.php</span> <span class="size">(5 KB)</span> <span class="desc">—
+                        Email gönderimi</span>
+                    ├── <span class="file">sms.php</span> <span class="size">(8 KB)</span> <span class="desc">— SMS
+                        altyapısı</span>
+                    ├── <span class="file">whatsapp_control.php</span> <span class="size">(3 KB)</span> <span
+                        class="desc">— WhatsApp kontrolü</span>
+                    ├── <span class="file">backup.php</span> <span class="size">(6 KB)</span> <span class="desc">—
+                        Yedekleme</span>
+                    ├── <span class="file">kvkk.php</span> <span class="size">(12 KB)</span> <span class="desc">— KVKK
+                        yönetimi</span>
+                    ├── <span class="file">batch_debt.php</span> <span class="size">(5 KB)</span> <span class="desc">—
+                        Toplu borçlandırma</span>
+                    ├── <span class="file">batch_past_debt.php</span> <span class="size">(4 KB)</span> <span
+                        class="desc">— Geçmiş borçlandırma</span>
+                    ├── <span class="file">session_check.php</span> <span class="size">(0.6 KB)</span> <span
+                        class="desc">— Session doğrulama</span>
+                    ├── <span class="file">kvkk_migrate.php</span> <span class="size">(3 KB)</span> <span class="desc">—
+                        KVKK migrasyon</span>
+                    └── <span class="file">kvkk_reverse_migrate.php</span> <span class="size">(3 KB)</span> <span
+                        class="desc">— KVKK geri alma</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEKNOLOJİ -->
+        <div class="section">
+            <div class="section-header">⚙️ Teknoloji Yığını</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>Katman</th>
+                            <th>Teknoloji</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Frontend</strong></td>
+                            <td>HTML5 + Vanilla JavaScript (SPA — Tek Sayfa Uygulama)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Backend</strong></td>
+                            <td>PHP 7.4+</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Veritabanı</strong></td>
+                            <td>MySQL</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hosting</strong></td>
+                            <td>Turhost (cPanel)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>WhatsApp</strong></td>
+                            <td>Lokal sunucu (whatsapp-web.js)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email</strong></td>
+                            <td>PHP mail()</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SMS</strong></td>
+                            <td>NetGSM API (altyapı hazır)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Versiyon Kontrol</strong></td>
+                            <td>Git + GitHub</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ÜYELİK TİPLERİ -->
+        <div class="section">
+            <div class="section-header">👥 Üyelik Tipi Kuralları</div>
+            <div class="section-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>Üyelik Tipi</th>
+                            <th>Aidat Öder</th>
+                            <th>Borçlandırılır</th>
+                            <th>Hatırlatma Alır</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Asil Üye</strong></td>
+                            <td><span class="status-ok">✅ Evet</span></td>
+                            <td><span class="status-ok">✅ Evet</span></td>
+                            <td><span class="status-ok">✅ Evet</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Asil Onursal</strong></td>
+                            <td><span class="status-ok">✅ Evet</span></td>
+                            <td><span class="status-ok">✅ Evet</span></td>
+                            <td><span class="status-ok">✅ Evet</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Öğrenci Üye</strong></td>
+                            <td><span class="status-no">❌ Muaf</span></td>
+                            <td><span class="status-no">❌ Hayır</span></td>
+                            <td><span class="status-no">❌ Hayır</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fahri Üye</strong></td>
+                            <td><span class="status-no">❌ Muaf</span></td>
+                            <td><span class="status-no">❌ Hayır</span></td>
+                            <td><span class="status-no">❌ Hayır</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fahri Onursal</strong></td>
+                            <td><span class="status-no">❌ Muaf</span></td>
+                            <td><span class="status-no">❌ Hayır</span></td>
+                            <td><span class="status-no">❌ Hayır</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <strong>TPJD Üyelik Yönetim Paneli</strong> — 3 günde sıfırdan canlıya<br>
+            25+ dosya · 8500+ satır kod · 9 otonom agent · 3 iletişim kanalı
+        </div>
+
+    </div>
+
+</body>
+
+</html>
