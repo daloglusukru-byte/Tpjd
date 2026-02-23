@@ -337,27 +337,6 @@ function sendWhatsAppMessage($data)
     }
 
     try {
-        $stmt = $conn->prepare("SELECT value FROM settings WHERE `key` = 'whatsapp_settings'");
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-        $stmt->close();
-
-        if (!$row || empty($row['value'])) {
-            sendResponse(false, 'WhatsApp (Evolution API) ayarları yapılandırılmamış');
-            return;
-        }
-
-        $waSettings = json_decode($row['value'], true);
-        $apiUrl = $waSettings['apiUrl'] ?? '';
-        $apiKey = $waSettings['apiKey'] ?? '';
-        $instanceName = $waSettings['instanceName'] ?? '';
-
-        if (empty($apiUrl) || empty($apiKey) || empty($instanceName)) {
-            sendResponse(false, 'Evolution API URL, Key veya Instance eksik');
-            return;
-        }
-
         // Format phone number
         $phone = preg_replace('/[^0-9]/', '', $data['phone']);
         if (strlen($phone) === 10 && $phone[0] === '5') {
@@ -366,12 +345,12 @@ function sendWhatsAppMessage($data)
             $phone = '9' . $phone;
         }
 
-        // Evolution API v2 - Send Text
-        $url = rtrim($apiUrl, '/') . '/message/sendText/' . urlencode($instanceName);
+        // WhatsApp Local Server - Send Text
+        $url = 'http://localhost:3456/send';
 
         $payload = json_encode([
             'number' => $phone,
-            'text' => $data['message']
+            'message' => $data['message']
         ]);
 
         $ch = curl_init();
@@ -380,10 +359,8 @@ function sendWhatsAppMessage($data)
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'apikey: ' . $apiKey
+            'Content-Type: application/json'
         ]);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 
         $response = curl_exec($ch);
@@ -393,20 +370,20 @@ function sendWhatsAppMessage($data)
 
         if ($curlError) {
             logError('WhatsApp curl error: ' . $curlError);
-            sendResponse(false, 'WhatsApp bağlantı hatası: ' . $curlError);
+            sendResponse(false, 'WhatsApp bağlantı hatası: Sunucu kapalı olabilir. Lütfen .bat dosyasını çalıştırın.');
             return;
         }
 
         $result = json_decode($response, true);
 
-        if ($httpCode >= 200 && $httpCode < 300) {
+        if ($httpCode >= 200 && $httpCode < 300 && isset($result['success']) && $result['success'] === true) {
             sendResponse(true, 'WhatsApp mesajı gönderildi', [
-                'messageId' => $result['key']['id'] ?? '',
-                'status' => $result['status'] ?? 'sent'
+                'messageId' => $result['messageId'] ?? '',
+                'status' => 'sent'
             ]);
         } else {
-            $errorMsg = $result['message'] ?? $result['error'] ?? 'HTTP ' . $httpCode;
-            logError('WhatsApp API error: ' . $errorMsg);
+            $errorMsg = $result['error'] ?? 'HTTP ' . $httpCode;
+            logError('WhatsApp Local API error: ' . $errorMsg);
             sendResponse(false, 'WhatsApp hatası: ' . $errorMsg);
         }
 

@@ -255,7 +255,19 @@ function addMember($data)
 
     } catch (Exception $e) {
         logError($e->getMessage());
-        sendResponse(false, 'Üye eklenirken hata oluştu: ' . $e->getMessage());
+        $msg = $e->getMessage();
+        if (strpos($msg, "Duplicate entry") !== false) {
+            if (strpos($msg, "tcNo") !== false) {
+                $msg = "Bu TC Kimlik Numarası sistemde zaten kayıtlı!";
+            } elseif (strpos($msg, "memberNo") !== false) {
+                $msg = "Bu Üye Numarası sistemde zaten kayıtlı!";
+            } elseif (strpos($msg, "email") !== false) {
+                $msg = "Bu E-Posta adresi sistemde zaten kayıtlı!";
+            } else {
+                $msg = "Bu kayıt zaten sistemde mevcut!";
+            }
+        }
+        sendResponse(false, 'Hata: ' . $msg);
     }
 }
 
@@ -363,7 +375,19 @@ function updateMember()
 
     } catch (Exception $e) {
         logError($e->getMessage());
-        sendResponse(false, 'Üye güncellenirken hata oluştu: ' . $e->getMessage());
+        $msg = $e->getMessage();
+        if (strpos($msg, "Duplicate entry") !== false) {
+            if (strpos($msg, "tcNo") !== false) {
+                $msg = "Bu TC Kimlik Numarası sistemde zaten kayıtlı!";
+            } elseif (strpos($msg, "memberNo") !== false) {
+                $msg = "Bu Üye Numarası sistemde zaten kayıtlı!";
+            } elseif (strpos($msg, "email") !== false) {
+                $msg = "Bu E-Posta adresi sistemde zaten kayıtlı!";
+            } else {
+                $msg = "Bu kayıt zaten sistemde mevcut!";
+            }
+        }
+        sendResponse(false, 'Hata: ' . $msg);
     }
 }
 

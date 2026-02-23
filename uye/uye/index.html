@@ -4369,21 +4369,28 @@
                     }
                 }
 
-                // ── WhatsApp (Evolution API via server) ──
+                // ── WhatsApp (Evolution API via server / Local) ──
                 if (sendWhatsapp && member.phone) {
                     try {
-                        const res = await fetch(`${API_BASE}/notifications.php?action=whatsapp_send`, {
+                        const res = await fetch(`http://localhost:3456/send`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                phone: member.phone,
+                                number: member.phone,
                                 message: `*${subject}*\n\n${message}`
-                            })
+                            }),
+                            signal: AbortSignal.timeout(15000)
                         });
                         const data = await res.json();
-                        results.push({ channel: 'WhatsApp', icon: 'fab fa-whatsapp', color: '#25D366', success: data.success, msg: data.message });
+
+                        // Local success response format is { success: true, messageId: "..." }
+                        if (data.success) {
+                            results.push({ channel: 'WhatsApp', icon: 'fab fa-whatsapp', color: '#25D366', success: true, msg: 'WhatsApp mesajı gönderildi' });
+                        } else {
+                            results.push({ channel: 'WhatsApp', icon: 'fab fa-whatsapp', color: '#25D366', success: false, msg: data.error || 'WhatsApp gönderilemedi' });
+                        }
                     } catch (e) {
-                        results.push({ channel: 'WhatsApp', icon: 'fab fa-whatsapp', color: '#25D366', success: false, msg: e.message });
+                        results.push({ channel: 'WhatsApp', icon: 'fab fa-whatsapp', color: '#25D366', success: false, msg: e.message || 'Hata: Yerel sunucu kapalı olabilir' });
                     }
                 }
 
@@ -5190,7 +5197,7 @@
                         // ─ Yeni üye kaydında otomatik cari yıl borçlandırma ─
                         if (!memberIdInput && member.aidatAktif) {
                             const currentYear = new Date().getFullYear();
-                            const alreadyCharged = isPastDebtRequested && selectedYears.includes(String(currentYear));
+                            const alreadyCharged = isPastDebtRequested && selectedPastDebts.some(d => String(d.year) === String(currentYear));
                             if (!alreadyCharged) {
                                 try {
                                     // Manuel bedel girilmiş mi kontrol et
@@ -6451,7 +6458,9 @@
                     for (const p of paymentsToInsert) {
                         await fetch(`${API_BASE}/payments.php`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
                             body: JSON.stringify(p)
                         });
                     }
@@ -7680,7 +7689,7 @@
 
                 // ── Event Hooks ────────────────────────────
                 async onPaymentConfirmed(payment) {
-                    if (!this.config.payment_confirm?.enabled) return;
+                    if (this.config.payment_confirm?.enabled === false) return;
                     const member = members.find(m => m.id === payment.memberId);
                     if (!member) return;
                     const subject = 'Ödeme Onayı - TPJD';
@@ -7720,7 +7729,7 @@
                 }
 
                 async onNewMember(member) {
-                    if (!this.config.welcome?.enabled) return;
+                    if (this.config.welcome?.enabled === false) return;
                     const subject = 'TPJD\'ye Hoş Geldiniz!';
                     const message = `Sayın ${member.firstName} ${member.lastName},\n\nTürkiye Petrol Jeologları Derneği ailesine hoş geldiniz!\n\nÜye Numaranız: ${member.memberNo}\nÜyelik Tipiniz: ${member.membershipType}\n\nSorularınız için uye@tpjd.org.tr adresinden bize ulaşabilirsiniz.\n\nSaygılarımızla,\nTPJD Yönetimi`;
 
@@ -7750,7 +7759,7 @@
                 }
 
                 async runDebtReminder(tier) {
-                    if (!this.config.debt_reminder?.enabled) { alert('Borç Hatırlatma agent\'ı devre dışı!'); return; }
+                    if (this.config.debt_reminder?.enabled === false) { alert('Borç Hatırlatma agent\'ı devre dışı!'); return; }
                     const tierNames = { 1: 'Nazik Hatırlatma', 2: 'Resmi Uyarı', 3: 'Son Uyarı' };
                     if (!confirm(`Kademe ${tier} (${tierNames[tier]}) borç hatırlatması gönderilecek. Devam?`)) return;
 
@@ -7814,7 +7823,7 @@
                 }
 
                 async runYearlyCharge() {
-                    if (!this.config.yearly_charge?.enabled) { alert('Yıllık Borçlandırma agent\'ı devre dışı!'); return; }
+                    if (this.config.yearly_charge?.enabled === false) { alert('Yıllık Borçlandırma agent\'ı devre dışı!'); return; }
                     const year = prompt('Borçlandırma yılını girin:', new Date().getFullYear());
                     if (!year) return;
 
@@ -7831,7 +7840,7 @@
                 }
 
                 async runBirthdayAgent() {
-                    if (!this.config.birthday?.enabled) { alert('Doğum Günü agent\'ı devre dışı!'); return; }
+                    if (this.config.birthday?.enabled === false) { alert('Doğum Günü agent\'ı devre dışı!'); return; }
                     try {
                         showNotification('Doğum günleri kontrol ediliyor...', 'info');
                         const res = await fetch(`${this.apiBase}?action=run`, {
@@ -7851,7 +7860,7 @@
                 }
 
                 async runSeniorityAgent() {
-                    if (!this.config.seniority_promotion?.enabled) { alert('Kıdem Terfi agent\'ı devre dışı!'); return; }
+                    if (this.config.seniority_promotion?.enabled === false) { alert('Kıdem Terfi agent\'ı devre dışı!'); return; }
                     try {
                         showNotification('🏅 Kıdem terfi adayları kontrol ediliyor...', 'info');
 
@@ -8527,7 +8536,9 @@
                         } catch (e) {
                             console.error('Yearly charge auto-run error:', e);
                         }
-                    }\n\n                    if (ranAgents.length > 0) {
+                    }
+
+                    if (ranAgents.length > 0) {
                         showNotification(`🤖 Otomatik çalıştırıldı: ${ranAgents.join(', ')}`, 'success');
                         // Agent stats & logs'u yenile
                         await agentManager.loadStats();
