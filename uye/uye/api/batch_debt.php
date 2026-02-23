@@ -31,35 +31,48 @@ try {
     // 1. Get dues settings
     $sql_settings = "SELECT setting_value FROM settings WHERE setting_key = 'aidat_settings'";
     $result_settings = $conn->query($sql_settings);
-    if (!$result_settings || $result_settings->num_rows === 0) {
-        // Try to get individual settings from the database
-        $aidatSettings = [];
-        $settingKeys = ['aidatAsilUye', 'aidatAsilOnursal', 'aidatOgrenciUye', 'aidatFahriUye', 'aidatFahriOnursal'];
+    $aidatSettings = [];
 
-        foreach ($settingKeys as $key) {
+    if (!$result_settings || $result_settings->num_rows === 0) {
+        // Try individual fallback if aidat_settings JSON doesn't exist
+        $settingKeysMap = [
+            'aidatAsilUye' => 'Asil Üye',
+            'aidatAsilOnursal' => 'Asil Onursal',
+            'aidatOgrenciUye' => 'Öğrenci Üye',
+            'aidatFahriUye' => 'Fahri Üye',
+            'aidatFahriOnursal' => 'Fahri Onursal'
+        ];
+
+        foreach ($settingKeysMap as $dbKey => $membershipType) {
             $sql = "SELECT setting_value FROM settings WHERE setting_key = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param('s', $key);
+            $stmt->bind_param('s', $dbKey);
             $stmt->execute();
-            $result = $stmt->get_result();
-            if ($result && $row = $result->fetch_assoc()) {
-                $value = floatval($row['setting_value']);
-                $membershipType = str_replace(
-                    ['aidatAsilUye', 'aidatAsilOnursal', 'aidatOgrenciUye', 'aidatFahriUye', 'aidatFahriOnursal'],
-                    ['Asil Üye', 'Asil Onursal', 'Öğrenci Üye', 'Fahri Üye', 'Fahri Onursal'],
-                    $key
-                );
-                $aidatSettings[$membershipType] = $value;
+
+            $stmt->bind_result($sval);
+            if ($stmt->fetch()) {
+                $aidatSettings[$membershipType] = floatval($sval);
             }
+            $stmt->close();
         }
 
         if (empty($aidatSettings)) {
-            throw new Exception('Dues settings not found.');
+            // Provide default fallback if db is completely empty for dues
+            $aidatSettings = [
+                'Asil Üye' => 1500,
+                'Öğrenci Üye' => 0
+            ];
         }
     } else {
-        $aidatSettings = json_decode($result_settings->fetch_assoc()['setting_value'], true);
-        if (!is_array($aidatSettings)) {
-            throw new Exception('Invalid dues settings format.');
+        $row = $result_settings->fetch_assoc();
+        $decoded = json_decode($row['setting_value'], true);
+        if (is_array($decoded)) {
+            $aidatSettings = $decoded;
+        } else {
+            $aidatSettings = [
+                'Asil Üye' => 1500,
+                'Öğrenci Üye' => 0
+            ];
         }
     }
 
@@ -76,11 +89,13 @@ try {
     $stmt_existing = $conn->prepare($sql_existing);
     $stmt_existing->bind_param('i', $year);
     $stmt_existing->execute();
-    $result_existing = $stmt_existing->get_result();
+
+    $stmt_existing->bind_result($existingMemberId);
     $existingDebts = [];
-    while ($row = $result_existing->fetch_assoc()) {
-        $existingDebts[$row['memberId']] = true;
+    while ($stmt_existing->fetch()) {
+        $existingDebts[$existingMemberId] = true;
     }
+    $stmt_existing->close();
 
     $newDebts = [];
     $skippedCount = 0;

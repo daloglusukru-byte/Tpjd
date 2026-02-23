@@ -4666,8 +4666,9 @@
                 if (!select) return;
                 select.innerHTML = '<option value="">Üye seçiniz</option>';
                 const term = searchTerm.toLowerCase();
-                members.filter(m => !term || `${m.memberNo} ${m.firstName} ${m.lastName}`.toLowerCase().includes(term))
-                    .forEach(m => select.add(new Option(`${m.memberNo} - ${m.firstName} ${m.lastName}`, m.id)));
+                const filtered = members.filter(m => !term || `${m.memberNo} ${m.firstName} ${m.lastName}`.toLowerCase().includes(term));
+                filtered.forEach(m => select.add(new Option(`${m.memberNo} - ${m.firstName} ${m.lastName}`, m.id)));
+                if (filtered.length === 1 && term) select.selectedIndex = 1; // Auto select if there is only 1 match
             }
 
             function searchMemberForNotification() {
@@ -4689,7 +4690,8 @@
                     const select = document.getElementById('individualMemberId');
                     select.innerHTML = '';
                     n.recipients.forEach(rid => {
-                        const m = members.find(mem => mem.id === rid);
+                        const memberIdStr = typeof rid === 'object' ? rid.id : rid;
+                        const m = members.find(mem => mem.id === memberIdStr);
                         if (m) select.add(new Option(`${m.firstName} ${m.lastName}`, m.id, true, true));
                     });
                 } else {
@@ -4703,7 +4705,7 @@
                 const message = document.getElementById('notificationMessage').value.trim();
                 const mid = document.getElementById('individualMemberId').value;
                 if (!title || !message || !mid) {
-                    showNotification('Eksik bilgi!', 'warning');
+                    showNotification('Lütfen başlık, mesaj girin ve aşağıdaki listeden bir üye SEÇİN!', 'warning');
                     return null;
                 }
                 const member = members.find(m => m.id === mid);
@@ -7700,12 +7702,19 @@
                             }
                         } else {
                             try {
-                                await fetch(`${this.apiBase}?action=send-notification`, {
+                                const response = await fetch(`${this.apiBase}?action=send-notification`, {
                                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ agent_name: 'payment_confirm', channel, recipient_id: member.id, subject, message })
                                 });
-                                console.log(`🤖 Payment confirm (${channel}) sent to`, member.firstName);
-                            } catch (e) { console.error(`Payment confirm ${channel} error:`, e); }
+                                const result = await response.json();
+                                if (result.success) {
+                                    showNotification(`📧 Ödeme makbuzu ${member.firstName} ${member.lastName} isimli üyeye (${channel}) gönderildi!`, 'success');
+                                } else {
+                                    console.warn(`Payment confirm ${channel} error:`, result.message);
+                                }
+                            } catch (e) {
+                                console.error(`Payment confirm ${channel} error:`, e);
+                            }
                         }
                     }
                 }
@@ -8506,7 +8515,19 @@
                     }
 
                     // 6. Sonuç bildirimi
-                    if (ranAgents.length > 0) {
+                    // 6. Yearly Charge Agent - her yil 1 kez
+                    if (status.yearly_charge?.should_run && agentManager.config.yearly_charge?.enabled !== false) {
+                        try {
+                            await fetch(`${agentManager.apiBase}?action=run`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ agent: 'yearly_charge', year: new Date().getFullYear(), internal: true })
+                            });
+                            ranAgents.push('💰 Yıllık Borçlandırma');
+                        } catch (e) {
+                            console.error('Yearly charge auto-run error:', e);
+                        }
+                    }\n\n                    if (ranAgents.length > 0) {
                         showNotification(`🤖 Otomatik çalıştırıldı: ${ranAgents.join(', ')}`, 'success');
                         // Agent stats & logs'u yenile
                         await agentManager.loadStats();

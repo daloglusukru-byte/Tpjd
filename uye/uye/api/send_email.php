@@ -22,22 +22,21 @@ $message = $data['message'];
 
 global $conn;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
+
+require_once 'phpmailer/Exception.php';
+require_once 'phpmailer/PHPMailer.php';
+require_once 'phpmailer/SMTP.php';
+
 try {
     // SMTP settings
     $smtpHost = 'mail.tpjd.org.tr';
     $smtpPort = 465;
     $smtpUsername = 'uye@tpjd.org.tr';
     $smtpPassword = '$TKJ[0sPtEHhoDEA';
-    $smtpSecure = 'ssl';
-
-    // Create email headers
-    $headers = [
-        'From: TPJD Derneği <uye@tpjd.org.tr>',
-        'Reply-To: uye@tpjd.org.tr',
-        'MIME-Version: 1.0',
-        'Content-Type: text/html; charset=UTF-8',
-        'X-Mailer: PHP/' . phpversion()
-    ];
+    $smtpSecure = PHPMailer::ENCRYPTION_SMTPS;
 
     // HTML message template
     $htmlMessage = '
@@ -75,27 +74,62 @@ try {
     $failureCount = 0;
     $errors = [];
 
+    // Initialize PHPMailer outside loop if we want to reuse connection, but sending one by one is safer to avoid BCC exposure if not coded properly
+    // Let's create one mailer instance and reuse it with keepalive
+    $mail = new PHPMailer(true);
+
+    // Server settings
+    $mail->isSMTP();
+    $mail->Host = $smtpHost;
+    $mail->SMTPAuth = true;
+    $mail->Username = $smtpUsername;
+    $mail->Password = $smtpPassword;
+    $mail->SMTPSecure = $smtpSecure;
+    $mail->Port = $smtpPort;
+    $mail->CharSet = 'UTF-8';
+        $mail->SMTPKeepAlive = true; // Keep connection open for multiple emails
+
+    $mail->SMTPOptions = array(
+        'ssl' => array(
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true
+        )
+    );
+
+    // From
+    $mail->setFrom($smtpUsername, 'TPJD Derneği');
+    $mail->addReplyTo($smtpUsername, 'TPJD Derneği');
+
+    $mail->isHTML(true);
+
     // Send to each recipient
     foreach ($recipients as $recipient) {
         $to = $recipient['email'];
         $personalizedSubject = $subject;
 
-        // Send email using PHP mail with SMTP
         try {
-            // For now, use basic PHP mail (can be upgraded to PHPMailer later)
-            $mailSent = mail($to, $personalizedSubject, $htmlMessage, implode("\r\n", $headers));
+            $mail->clearAddress();
+            $mail->clearAllRecipients();
+            $mail->addAddress($to, $recipient['name'] ?? '');
 
-            if ($mailSent) {
+            $mail->Subject = $personalizedSubject;
+            $mail->Body = $htmlMessage;
+
+            if ($mail->send()) {
                 $successCount++;
             } else {
                 $failureCount++;
-                $errors[] = "Failed to send to {$to}";
+                $errors[] = "Failed to send to {$to}: " . $mail->ErrorInfo;
             }
         } catch (Exception $e) {
             $failureCount++;
             $errors[] = "Error sending to {$to}: " . $e->getMessage();
         }
     }
+
+    // Close connection
+    $mail->smtpClose();
 
     // Log email sending
     $logData = [
@@ -140,7 +174,8 @@ try {
             'errors' => $errors
         ]);
     } else {
-        sendResponse(false, 'E-posta gönderilemedi', ['errors' => $errors]);
+        $errorDetails = implode(" | ", $errors);
+        sendResponse(false, 'E-posta gönderilemedi: ' . $errorDetails, ['errors' => $errors]);
     }
 
 } catch (Exception $e) {
